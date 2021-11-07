@@ -1,5 +1,6 @@
 ---
 title: "IODS course project"
+author: "Jakob Leino"
 output:
   html_document:
     theme: cosmo

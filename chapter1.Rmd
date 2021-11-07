@@ -9,5 +9,8 @@
 date()
 
 ```
-The text continues here.
+The text continues here...
+
+ hardest thing about the course so far is navigating the MOOC-environment. Wish we still used mooodle :(
+https://github.com/JakobLeino/IODS-project 
 
