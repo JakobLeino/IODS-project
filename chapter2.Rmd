@@ -1,11 +1,6 @@
 # Regressional analysis
 
 *Describe the work you have done this week and summarize your learning.*
-
-- Describe your work and results clearly. 
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
-
 Jakob Leino 14.11.2021
 
 learning2014 <- read.csv(file="learning2014")
@@ -15,7 +10,7 @@ library(ggplot2)
 
 Bruno <- ggpairs(learning2014, mapping = aes(col = gender, alpha = 0.3), lower = list(combo = wrap("facethist", bins = 20)))
 
-Bruno
+print(Bruno)
 
 I decided to show the data summarised in a matrix plot called "Bruno". I also changed the outlook of the plot to mimic the one made earlier from DataCamp. The highest correlation between two variables is with the variables "Points" and "Attitude". It is statistically significant and should be looked at further. The second highest correlation is with two summary variables "Surf" and "Deep" meaning surface and deep level learning. The correlation is negative however.
 
@@ -24,7 +19,7 @@ Rafael <- lm(Points ~ Attitude + Strategic + Surf, data = learning2014)
 summary(Rafael)
 
 
-Here I just made a simple regression model to look at the relationship of the categories attitude, strategic and surf towards the category points. The important number to look at there is the P value, which is the last column marked "Pr(>|t|)". The lower the P number the higher the chance of that category being statistically related to the category "points". Here the category "Surf" was the least affiliated with points, so let us remove that and see how it changes the model if at all. 
+Here I just made a simple regression model to look at the relationship of the categories attitude, strategic and surf towards the category points. The important number to look at there is the P value, which is the last column marked "Pr(>|t|)". The lower the P number the higher the chance of that category being statistically related to the category "points". Here the category "Surf" was the least affiliated with points, so let us remove that and see how it changes the model if does change the model. 
 
 Da_Silva <- lm(Points ~ Attitude + Strategic, data = learning2014)
 
