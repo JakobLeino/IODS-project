@@ -10,7 +10,7 @@ library(ggplot2)
 
 Bruno <- ggpairs(learning2014, mapping = aes(col = gender, alpha = 0.3), lower = list(combo = wrap("facethist", bins = 20)))
 
-print(Bruno)
+Bruno
 
 I decided to show the data summarised in a matrix plot called "Bruno". I also changed the outlook of the plot to mimic the one made earlier from DataCamp. The highest correlation between two variables is with the variables "Points" and "Attitude". It is statistically significant and should be looked at further. The second highest correlation is with two summary variables "Surf" and "Deep" meaning surface and deep level learning. The correlation is negative however.
 
