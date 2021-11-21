@@ -20,45 +20,6 @@ output:
 ```
   
 ***
-# Regressional analysis
-
-*Describe the work you have done this week and summarize your learning.*
-Jakob Leino 14.11.2021
-
-learning2014 <- read.csv(file="learning2014")
-
-library(GGally)
-library(ggplot2)
-
-Bruno <- ggpairs(learning2014, mapping = aes(col = gender, alpha = 0.3), lower = list(combo = wrap("facethist", bins = 20)))
-
-Bruno
-
-I decided to show the data summarised in a matrix plot called "Bruno". I also changed the outlook of the plot to mimic the one made earlier from DataCamp. The highest correlation between two variables is with the variables "Points" and "Attitude". It is statistically significant and should be looked at further. The second highest correlation is with two summary variables "Surf" and "Deep" meaning surface and deep level learning. The correlation is negative however.
-
-Rafael <- lm(Points ~ Attitude + Strategic + Surf, data = learning2014)
-
-summary(Rafael)
-
-
-Here I just made a simple regression model to look at the relationship of the categories attitude, strategic and surf towards the category points. The important number to look at there is the P value, which is the last column marked "Pr(>|t|)". The lower the P number the higher the chance of that category being statistically related to the category "points". Here the category "Surf" was the least affiliated with points, so let us remove that and see how it changes the model if does change the model. 
-
-Da_Silva <- lm(Points ~ Attitude + Strategic, data = learning2014)
-
-summary(Da_Silva)
-
-Removing the "Surf" variable decreased the P value of "Attitude" solidifying the relation between that category and the category "Points". The P value of "Strategic" also decreased solidifying it's relation to the cateogry "points" aswell. So with this in mind we can say confidently that increases in the categories "Atittude" and "Strategic" could probably mean an increase in the category "Points". 
-
-The model "Da_Silva" produced an adjusted R-squared of 0.1951 with two explanatory variables, while the model "Rafael" produced an adjusted R-squared of 0.1927. This doesn't necessarily mean the model "Da_Silva" is a better model at showing what correlates with increases in the category "Points". The nature of calculating adjusted R-squared means that a smaller amount of variables will raise the number and hence it can't be taken at face value. However the general adjusted R squared score of around 0.2 means that the model is capable of explaining around 11% of the standard deviation. It is therefore not a particularly strong model. 
-
-par(mfrow = c(2,2))
-plot(Rafael, which = c(1,2,5))
-
-Now I have made the 3 plots which were mandatory and put them into one page showing them side by side. The first plot to look at is the Residuals vs Fitted plot, which says quite a lot about our model. The first thing to look at is that the observations form a sort of horizontal bar around the 0 line, so the assumption that the relationship is linear can be made. The next observation is that the values are skewed a bit towards the negative side, so there seems to be more variance there when compared to the positive side or the observations above the 0 line. Final noteworthy thing are the outliers from observations 56, 145 and 35. 
-
-The normal Q-Q plot is a plot which shows two quantiles "against" each other to see what kind of relationship the model supposes. The Q-Q plot I ended up with shows a linear relationship again, but the aforementioned outliers 56, 145 and 35 can be once again seen at the bottom of the graph distorting it slightly. Overall the assumption about a linear relationship is backed up with this graph. 
-
-The residuals vs leverage plot shows us that the observations 35 and 145 are dramatically influencing the model. You may see them being below the red line labelled "Cook's distance", which means these observations affect the results significantly. You also see a new outlier labeled in observation 77, which wasn't shown on previous graphs. The overall message is once again affirming to the hypothesis about a linear relationship. 
   
 ```{r child = "chapter2.Rmd"}
 # This will include Chapter 2 (that is updated in its own file) in the document.
@@ -66,5 +27,8 @@ The residuals vs leverage plot shows us that the observations 35 and 145 are dra
 
 ***
 
-(more chapters to be added similarly as we proceed with the course!)
+```{r child = "chapter3.Rmd"}
+# This will include Chapter 3 (that is updated in its own file) in the document.
+```
+
 

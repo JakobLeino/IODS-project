@@ -1,0 +1,17 @@
+Logistic regression
+```{r}
+library(dplyr)
+library(ggplot2)
+alc <- read.csv("alc.csv")
+print(alc)
+```
+# Here is the data used in this week's analysis. It is data related to student achievemnt in two Portuguese schools. This data includes student grades, demographic, social and school related features. The data was collected using school reports and questionnaires. 
+
+# For the variables I will be using for my analysis I will choose the following four: sex, age, activities and freetime. My personal hypothesis is that males will consume more alcohol than females, age increasing correlates with the increase in alcohol consumption in this population and then I am unsure about activites. I don't really have a guess as to how it will effect alcohol consumption or be related to it. I do think that freetime might be positively correlated with alcohol consumption though. 
+
+```{r}
+g1 <- ggplot(alc, aes(x = high_use, y = freetime, col = sex))
+
+```
+
+
