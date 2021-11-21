@@ -7,11 +7,64 @@ print(alc)
 ```
 # Here is the data used in this week's analysis. It is data related to student achievemnt in two Portuguese schools. This data includes student grades, demographic, social and school related features. The data was collected using school reports and questionnaires. 
 
-# For the variables I will be using for my analysis I will choose the following four: sex, age, activities and freetime. My personal hypothesis is that males will consume more alcohol than females, age increasing correlates with the increase in alcohol consumption in this population and then I am unsure about activites. I don't really have a guess as to how it will effect alcohol consumption or be related to it. I do think that freetime might be positively correlated with alcohol consumption though. 
+# For the variables I will be using for my analysis I will choose the following four: sex, age, activities and freetime. My personal hypothesis is that males will consume more alcohol than females, age increasing correlates with the increase in alcohol consumption in this population and then I am unsure about activites. I don't really have a guess as to how it will effect alcohol consumption or be related to it. I also think that alcohol consumption might increase with freetime. 
 
 ```{r}
+
 g1 <- ggplot(alc, aes(x = high_use, y = freetime, col = sex))
+g1 + geom_boxplot() + ylab("freetime") + ggtitle("Student alcohol consumption and freetime")
+
+alc %>% group_by(activities, high_use) %>% summarise(count = n())
+
+g3 <- ggplot(alc, aes(x = high_use, y = age, col = sex))
+g3 + geom_boxplot() + ggtitle("Student alcohol consumption and age") + ylab("age")
+```
+# The first boxplot is student alcohol consumption and freetime. There seems to be a an outlier in high use with low freetime and likewise in low use with low freetime. According to this there might be a relationship with alcohol consumption and freetime atleast for females, but there seems to be no significant difference for males. 
+
+#Then we have a cross tabulation of activities and high alcohol consumption. We can see that there were sligthly more people with higher alcohol consumption among people with no activites and the percentage of people with high alcohol consumption in people with no activites was also higher. Therefore, there might be a statistical relationship between having activites and alcohol consumption. 
+
+#The third graph is also a boxplot this time with student alcohol consumption and age. There are outliers in people with high alcohol consumption among males and females. There is also an outlier in the low alcohol consumption group on the female side, but not on the male side. There seems to be a potential relationship between age and alcohol consumption based on this plot. 
+
+```{r}
+m <- glm(high_use ~ freetime + activities + sex + age, data = alc, family = "binomial")
+summary(m)
+coef(m)
+OR <- coef(m) %>% exp
+CI <- confint(m) %>% exp
+cbind(OR, CI)
+```
+# Now I have fitted a logistic regression model with my selected variables freetime, activites, sex and age to explain high alchol consumption. We can then look at the odds ratios printed out to take a look at how each variable affects alcohol consumption. So out of the 4 variables I chose, 3 are positively linked to high alcohol consumption. Freetime and age seem to behave as similarly effective predictors of alcohol consumption, but as I theorised sex was by far the biggest factor. Activites seemed to affect alcohol consumption negatively, which I did not make a prediction for. However intuitively and very non-statistic point of view if you have nothing to do, why not have a drink? The outliers we saw in our boxplot investigation appear here again, since for example the age variable's 2.5% confidence interval drops to an odd's ratio of below one, even though base odds ratio number would indicate it as being a predictor of alcohol consumption. The confidence intervals also appear to hint that in some cases an increase in activites could lead to an increase in alcohol consumption, but other than these two cases they provide no further revelations. 
+
+```{r}
+probabilities <- predict(m, type = "response")
+alc <- mutate(alc, probability = probabilities)
+alc <- mutate(alc, prediction = probability > 0.5)
+select(alc, age, freetime, sex, high_use, activities, probability, prediction) %>% tail(10)
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+g4 <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
+g4 + geom_point()
+table(high_use = alc$high_use, prediction = alc$prediction) %>% prop.table() %>% addmargins()
+
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+loss_func(class = alc$high_use, prob = 0)
 
 ```
+# Here I tested the predictability of the model I created. Considering this is effectively a guessing model it still did suprisingly poorly with a prediction error of 0.3 and if this was to be a proper usage it would get reworked heavily. The best way of visualizing this is to look at the box plot, where you can see my model failing miserably in all it's glory. Comparing it to some guessing strategy is therefore really pointless. My model sucked.
 
+```{r}
+library(boot)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+loss_func(class = alc$high_use, prob = alc$probability)
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = m, K = 10)
+cv$delta[1]
+```
+#Here I tested my model with 10-fold cross-validation and it had an error of roughly 0.29. I tried removing the variable "activities", but the error in the testing actually increased slightly. Then I added the variable "absences" along with adding "activities" back and managed to bring it down to 0.27. I finally added a model with also the variable "grades (g3)" and got the error to 0.25 beating the datacamp model barely.
 
