@@ -1,0 +1,84 @@
+```{r}
+library(MASS)
+library(corrplot)
+library(ggplot2)
+data("Boston")
+str(Boston)
+dim(Boston)
+```
+#This dataset "Boston" is a dataset about the suburbs of the city it is named after. It consists of 14 different variables and 506 observations. The data was gathered from two seperate publications, which were "Hedonic prices and the demand for clean air" by Harrison and co, and "Regression Diagnostics. Identifying Influential Data and Sources of Collinearity" by Belsley and co. 
+```{r}
+cor_matrix<-cor(Boston) %>% round(digits = 2)
+corrplot(cor_matrix, method="circle", type="upper", cl.pos="b", tl.pos="d", tl.cex = 0.6)
+summary(Boston)
+```
+#Here is the visualisation of the data and the relationships between variables in a correlation plot. We can see a strong relationship between some variables. For example the variables "rad" and "tax" have a very strong positive correlation, so in Boston the full-value-property-tax rate per 10 thousand dollars and index of accesibility to radial highways correlates strongly. This is quite self-explanatory since easier transportation generally raises the value of the property. Another self explanatory one is the strong negative relationship between variables "age" and "dis". "age" stands for proportion of owner-occupied units built prior to 1940 and "dis" stands for weighted mean of distances to five Boston employment centres. Employment centers are rarely built among old housing areas, so it is understandable as to why these two variables are negatively correlated. I also summarised the data, which shows when looking at for example the "age" variable that the suburbs in question had quite a large share of buildings built before 1940, with the mean being 68% and median being 78%. Another interesting one is the pupil to teacher ratio in each town, which in the dataset is named "ptratio". This variable shows quite little distribution, with the pupil to teacher ratio staying in the high teens or low twenties throughout the observations. 
+
+```{r}
+boston_scaled <- scale(Boston)
+summary(boston_scaled)
+```
+#This is just scaling the dataset so the results can be compared to eachother. As you can see the variable outputs are now all similar numbers and most variabels fit within a -3 to +3 range. 
+
+```{r}
+boston_scaled <- as.data.frame(boston_scaled)
+bins <- quantile(boston_scaled$crim)
+crime <- cut(boston_scaled$crim, breaks = bins, include.lowest = TRUE, labels = c("low", "med_low", "med_high", "high"))
+boston_scaled <- dplyr::select(boston_scaled, -crim)
+boston_scaled <- data.frame(boston_scaled, crime)
+summary(boston_scaled)
+
+n <- nrow(boston_scaled)
+ind <- sample(n,  size = n * 0.8)
+train <- boston_scaled[ind,]
+test <- boston_scaled[-ind,]
+```
+#I created a categorical variable of the crime rate in Boston from the scaled crime rate. After that I dropped the original "crim" variable and replaced it with the categorical variable I created. Then I created a train and test set of data, where 80% of the variables are in the train set. 
+
+```{r}
+lda.fit <- lda(crime ~ ., data = train)
+classes <- as.numeric(train$crime)
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "orange", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+plot(lda.fit, dimen = 2, col = classes, pch = classes)
+```
+#I made a linear digression analysis model with the target variable being "crime". The dataset used was the "train" dataset, which is 80% of the variables in the original dataset, but selected randomly. Then I drew a plot of this model, which shows the clusters in the data and distinguishes variables by color. 
+
+```{r}
+correct_classes <- test$crime
+test <- dplyr::select(test, -crime)
+
+lda.pred <- predict(lda.fit, newdata = test)
+table(correct = correct_classes, predicted = lda.pred$class)
+```
+# The LDA model did not predict the crime rates correctly at all. As an example the model predicted high crime rate being 21, when in reality it was 0. The other categories were closer, for example medium low crime rate was off by 1. Predicted model showed it as a six and in the test set it was 5. 
+
+```{r}
+data(Boston)
+Boston_scaled <- scale(Boston)
+dist_eu <- dist(Boston)
+dist_man <- dist(Boston, method = 'manhattan')
+```
+#I scaled the original dataset again and then calculated the Euclidean and Manhattan distances of the scaled dataset. 
+
+```{r}
+set.seed(420)
+k_max <- 10
+twcss <- sapply(1:k_max, function(k){kmeans(Boston, k)$tot.withinss})
+qplot(x = 1:k_max, y = twcss, geom = 'line')
+```
+#Here I figured out the optimal number of clusters for the K-means algorithm. One way to determine the optimal amount of clusters is to look at how the total of within cluster sum of squares behaves when the number of clusters is changes. This can be visualized with a graph, where you can see a drastic drop around 2. Hence the optimal amount of clusters for this dataset is 2. 
+
+```{r}
+set.seed(420)
+km <-kmeans(Boston, centers = 2)
+pairs(Boston, col = km$cluster)
+```
+# Here I ran the K-means algorithm with 2 clusters and then produced a matrix visualising the results. The target amount of clusters was two, so the variable combinations with two seperate and distinguishable clusters can be easily spotted from the matrix. For example crime rate and full value property tax form two nice and easily seperate clusters. The "chas" variable seems to be doing the best job here, but that is due to the fact it is a dummy variable with the values 0 and 1, whichh then clusters well to two different clusters. "Tax" variable clusters quite well generally also and so does "rad", which is an index of accessibility to radial highways. Potentially there might be something there relating to wealth status and all the other variables?
+
