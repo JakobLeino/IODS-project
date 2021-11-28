@@ -1781,7 +1781,7 @@ loss_func(class = alc$high_use, prob = alc$probability)</code></pre>
 <pre><code>## [1] 0.2756757</code></pre>
 <pre class="r"><code>cv &lt;- cv.glm(data = alc, cost = loss_func, glmfit = m, K = 10)
 cv$delta[1]</code></pre>
-<pre><code>## [1] 0.2891892</code></pre>
+<pre><code>## [1] 0.2783784</code></pre>
 <p>#Here I tested my model with 10-fold cross-validation and it had an error of roughly 0.29. I tried removing the variable “activities”, but the error in the testing actually increased slightly. Then I added the variable “absences” along with adding “activities” back and managed to bring it down to 0.27. I finally added a model with also the variable “grades (g3)” and got the error to 0.25 beating the datacamp model barely.</p>
 </div>
 
