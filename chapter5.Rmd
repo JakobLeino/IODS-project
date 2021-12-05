@@ -1,0 +1,45 @@
+```{r}
+human <- read.table("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/human2.txt", sep  =",", header = T)
+library(GGally)
+library(ggplot2)
+library(dplyr)
+library(corrplot)
+library(FactoMineR)
+library(tidyr)
+summary(human)
+cor(human) %>% corrplot
+```
+#Here is a summary of the data and a plot showing the correlations between the variables. From the summary of the data we can see that the data is not standardized and that there are potentially quite a few outliers. For example in the variable GNI the highest and lowest values are quite far from the 3rd and 1st quantile respectively. The correlation plot shows us a moderate positive correlation between expected years of schooling and life expectancy, which is expectable. From the matrix we can also see that there is a strong negative correlation between expected years of schooling and maternal mortality along with adolescent birth rate. As to be expected there is also a strong negative correlation with life expectancy and maternal mortality and adolescent birth rate, which once again quite an expected correlation. 
+
+```{r}
+pca_human <- prcomp(human)
+biplot(pca_human, choices = 1:2, cex = c(1, 1), col = c("blue", "red"))
+```
+
+#Here I did a principal component analysis on the non-standardized data for comparison with the standardized version.
+
+```{r}
+human_std <- scale(human)
+pca_human1 <- prcomp(human_std)
+biplot(pca_human1, choices = 1:2, cex = c(1, 1), col = c("blue", "red"))
+```
+#The results are very different when comparing non-standardized principal component analysis to standardized principal component analysis. The most glaring difference is the distribution of data, where it is much easir to spot differences between observations. Another very obvious difference is the arrows. On the non-standardized plot we can only see an arrow of the GNI-data and it is perpendicular or almost perpendicular to the PC2 variable. We can look at a few strong correlations from this biplot between some of the original components. As an example maternal mortality and adolescent high birth rate are highly correlated, which we noticed earlier also. These two components share also a similar and large standard deviation, which can be seen from the arrow's length. Similarly, but to another direction we can see labor rate and percentage of female representatives in parliament. The two arrows are similar in length and the angle between them is larger than the first example, but relatively small. The direction of the arrow tells us that the mortality and birth rate cluster is correlated with the first principal component, which is responsible for most of the variance and our second cluster is correlated with the second principal component.
+
+#Now my personal interpretations of these two principal components is based off of the two clusters I went over. The first cluster is so highly correlated with mortality and birth rates that I would guess most of the variability in this dataset is based off of different accounts of mortality and life expectancy and so on. The second cluster is then related to economical fruition, due to the labor rate being highly correlated with the second principal component, which accounts for the rest of the variance. 
+
+
+```{r}
+data(tea)
+keep_columns<- c("Tea", "How", "how", "sugar", "where", "lunch")
+tea_time <- select(tea, one_of(keep_columns))
+summary(tea_time)
+str(tea_time)
+gather(tea_time) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+```
+#Here I loaded the "tea" dataset from the FactomineR package and looked at the structre and summary of it. I also visualized said dataset. 
+
+```{r}
+mca <- MCA(tea_time, graph = FALSE)
+plot(mca, invisible=c("ind"), habillage = "quali")
+```
+#This is a biplot visualizing the MCA. The variable "tea shop" is most correlated with the first dimension, where as the variable "other" is most correlated with the second dimension. However, most intrestingly we can take a look at the distances between variables to see how similar they are. For example there is understandably quite a bit of similarity between the type of teas or the variables "black" and "Earl Grey". Same goes for "not lunch" and "alone". So a large amount of people who drink their tea not on a lunch drink it alone, which makes sense. Again the similarity between unpackaged tea and tea shop also makes sense, since these people would be more likely a bit more into tea than an average person and would go for the premium unpackaged tea.  
