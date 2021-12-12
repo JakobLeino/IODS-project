@@ -1,0 +1,100 @@
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(lme4)
+```
+```{r}
+BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt", sep = " ", header = T)
+RATS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt", sep = "\t", header = TRUE)
+
+BPRSL <- read.csv("BPRSL.csv")
+RATSL <- read.csv("RATSL.csv")
+glimpse(BPRSL)
+glimpse(RATSL)
+```
+#Just loaded the datasets for analysis and glimpsed them.
+
+```{r}
+BPRSL$treatment <- factor(BPRSL$treatment)
+BPRSL$subject <- factor(BPRSL$subject)
+glimpse(BPRSL)
+
+RATSL$ID <- factor(RATSL$ID)
+RATSL$Group <- factor(RATSL$Group)
+glimpse(RATSL)
+```
+#I factorized the categorical variables in both datasets for easier analysis.
+
+```{r}
+RATSL <- RATSL %>%
+  group_by(Time) %>%
+  mutate(stdWeight = (Weight - mean(Weight))/sd(Weight) ) %>%
+  ungroup()
+
+ggplot(RATSL, aes(x = Time, y = stdWeight, linetype = ID)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:5, times=4)) +
+  facet_grid(. ~ Group, labeller = label_both) +
+  theme(legend.position = "none") + 
+  scale_y_continuous(name = "Stand. Weight")
+```
+#I standardized the data for the plot and then plotted the data. Here we can see it divided by groups. There is an outlier in each group and the outlier is a particularly low weight in groups 1 and 3, while in group 2 the outlier has a higher weight. It also looks like most rats gained weight over the course of the study in group 1, while group 3 seems to have a decrease in weight over time. 
+
+```{r}
+RATSL10S <- RATSL %>%
+  filter(Time > 1) %>%
+  group_by(Group, ID) %>%
+  summarise( mean=mean(Weight) ) %>%
+  ungroup()
+```
+#I created a summary data by diet group and subject(ID) with mean as the summary variable.
+
+```{r}
+ggplot(RATSL10S, aes(x = Group, y = mean)) +
+  geom_boxplot() +
+  stat_summary(fun.y = "mean", geom = "point", shape=20, size=3, fill = "grey") +
+  scale_y_continuous(name = "mean(weight), Day 1-64")
+```
+#Now I plotted the mean summary measures to a boxplot. We can once again see that each group has an outlier and that the weights increased throughout the study. Group 1 contained rats which were much smaller than groups 2 and 3. 
+
+```{r}
+BPRS_reg <- lm(bprs ~ week + treatment, data = BPRSL)
+summary(BPRS_reg)
+```
+#Above are the results from fitting a linear regression model to BPRS data with BPRS-points as response variable and treatment and week as explanatory variables. 
+
+```{r}
+BPRS_ref <- lmer(bprs ~ week + treatment + (1 | subject), data = BPRSL, REML = FALSE)
+summary(BPRS_ref)
+```
+#And the next step, above the results from fitting a random intercept model to BPRS data with week and treatment as explanatory variables.
+
+```{r}
+BPRS_ref1 <- lmer(bprs ~ week + treatment + (week | subject), data = BPRSL, REML = FALSE)
+anova(BPRS_ref1, BPRS_ref)
+```
+#I also created a random slope model and then performed an Anova test on both the models. The P value came out as 0.01342 and it is low, meaning it has a good fit versus the comparison model. 
+
+```{r}
+Fitted <- fitted(BPRS_ref1)
+BPRSL <- BPRSL %>%
+  mutate(Fitted)
+
+ggplot(BPRSL, aes(x = week, y = Fitted, group = subject)) +
+  geom_line() +
+  scale_x_continuous(name = "Time (weeks)", breaks = seq(0, 8, 2)) +
+  scale_y_continuous(name = "Fitted BRPS (points)") +
+  theme(legend.position = "top")
+```
+#Now I created a fitted BPRS model from the interaction model and plotted it. The BPRS score lowered through out the study and the highest starting BPRS score lowered the most throughout the study. 
+
+
+
+
+
+
+
+
+
+
